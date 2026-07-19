@@ -1,19 +1,32 @@
-# Getting Started
-Install the dependencies and run the project
-```
+# Shopping List
+
+Shopping List is a small web application for keeping track of items to buy. Its objective is to provide a quick, focused way to add items to a shared list and remove them when they are no longer needed.
+
+The current application displays a shopping-themed interface, accepts an item through a text field, and adds submitted items to the list. Existing list items can be removed by double-clicking them.
+
+## Prerequisites
+
+- Node.js
+- npm
+
+## Getting started
+
+Install the project dependencies:
+
+```bash
 npm install
-npm start
 ```
 
-Head over to https://vitejs.dev/ to learn more about configuring vite
-## About Scrimba
+Start the Vite development server:
 
-At Scrimba our goal is to create the best possible coding school at the cost of a gym membership! 💜
-If we succeed with this, it will give anyone who wants to become a software developer a realistic shot at succeeding, regardless of where they live and the size of their wallets 🎉
-The Frontend Developer Career Path aims to teach you everything you need to become a Junior Developer, or you could take a deep-dive with one of our advanced courses 🚀
+```bash
+npm run dev
+```
 
-- [Our courses](https://scrimba.com/allcourses)
-- [The Frontend Career Path](https://scrimba.com/learn/frontend)
-- [Become a Scrimba Pro member](https://scrimba.com/pricing)
+## Production build
 
-Happy Coding!
+Create a production build in `dist/`:
+
+```bash
+npm run build
+```
