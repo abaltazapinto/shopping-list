@@ -1,17 +1,75 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"
 
-const appSettings = {
-    databaseURL: "https://shopping-list-d3a29-default-rtdb.europe-west1.firebasedatabase.app/"
+const firebaseConfig = {
+    apiKey: "AIzaSyDtO7WiaH5RHe5ixovVPx6U_JE1K6RmMw0",
+    authDomain: "shopping-list-d3a29.firebaseapp.com",
+    databaseURL: "https://shopping-list-d3a29-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "shopping-list-d3a29",
+    storageBucket: "shopping-list-d3a29.firebasestorage.app",
+    messagingSenderId: "200152985790",
+    appId: "1:200152985790:web:a0c473f5f821d523006eef"
 }
 
-const app = initializeApp(appSettings)
+const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
 const database = getDatabase(app)
 const shoppingListInDB = ref(database, "shoppingList")
 
+const authControlsEl = document.getElementById("auth-controls")
+const authStatusEl = document.getElementById("auth-status")
+const authErrorEl = document.getElementById("auth-error")
+const emailInputEl = document.getElementById("email-input")
+const passwordInputEl = document.getElementById("password-input")
+const createAccountButtonEl = document.getElementById("create-account-button")
+const signInButtonEl = document.getElementById("sign-in-button")
+const signOutButtonEl = document.getElementById("sign-out-button")
+const shoppingListInterfaceEl = document.getElementById("shopping-list-interface")
 const inputFieldEl = document.getElementById("input-field")
 const addButtonEl = document.getElementById("add-button")
 const shoppingListEl = document.getElementById("shopping-list")
+
+createAccountButtonEl.addEventListener("click", async function() {
+    await runAuthentication(createUserWithEmailAndPassword)
+})
+
+signInButtonEl.addEventListener("click", async function() {
+    await runAuthentication(signInWithEmailAndPassword)
+})
+
+signOutButtonEl.addEventListener("click", async function() {
+    clearAuthError()
+    signOutButtonEl.disabled = true
+
+    try {
+        await signOut(auth)
+    } catch (error) {
+        showAuthError(error)
+    } finally {
+        signOutButtonEl.disabled = false
+    }
+})
+
+onAuthStateChanged(auth, function(user) {
+    clearAuthError()
+
+    if (user) {
+        authStatusEl.textContent = `Signed in as ${user.email}`
+        authControlsEl.hidden = true
+        signOutButtonEl.hidden = false
+        shoppingListInterfaceEl.hidden = false
+        passwordInputEl.value = ""
+    } else {
+        authStatusEl.textContent = "No user is signed in."
+        authControlsEl.hidden = false
+        signOutButtonEl.hidden = true
+        shoppingListInterfaceEl.hidden = true
+        setAuthControlsDisabled(false)
+    }
+}, function(error) {
+    showAuthError(error)
+})
 
 addButtonEl.addEventListener("click", function() {
     let inputValue = inputFieldEl.value
@@ -45,6 +103,57 @@ function clearShoppingListEl() {
 
 function clearInputFieldEl() {
     inputFieldEl.value = ""
+}
+
+async function runAuthentication(authenticationMethod) {
+    clearAuthError()
+
+    const email = emailInputEl.value.trim()
+    const password = passwordInputEl.value
+
+    if (!email || !password) {
+        authErrorEl.textContent = "Enter both an email address and password."
+        return
+    }
+
+    setAuthControlsDisabled(true)
+
+    try {
+        await authenticationMethod(auth, email, password)
+    } catch (error) {
+        showAuthError(error)
+    } finally {
+        passwordInputEl.value = ""
+        setAuthControlsDisabled(false)
+    }
+}
+
+function setAuthControlsDisabled(disabled) {
+    emailInputEl.disabled = disabled
+    passwordInputEl.disabled = disabled
+    createAccountButtonEl.disabled = disabled
+    signInButtonEl.disabled = disabled
+}
+
+function clearAuthError() {
+    authErrorEl.textContent = ""
+}
+
+function showAuthError(error) {
+    const errorMessages = {
+        "auth/email-already-in-use": "An account already exists for this email address.",
+        "auth/invalid-email": "Enter a valid email address.",
+        "auth/invalid-login-credentials": "The email address or password is incorrect.",
+        "auth/invalid-credential": "The email address or password is incorrect.",
+        "auth/missing-password": "Enter a password.",
+        "auth/network-request-failed": "Unable to connect. Check your internet connection and try again.",
+        "auth/too-many-requests": "Too many attempts. Wait a moment and try again.",
+        "auth/user-not-found": "The email address or password is incorrect.",
+        "auth/weak-password": "Use a password with at least six characters.",
+        "auth/wrong-password": "The email address or password is incorrect."
+    }
+
+    authErrorEl.textContent = errorMessages[error.code] || "Authentication failed. Please try again."
 }
 
 function appendItemToShoppingListEl(item) {
