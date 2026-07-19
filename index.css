@@ -56,7 +56,8 @@ html, body {
 }
 
 #google-sign-in-button,
-#github-sign-in-button {
+#github-sign-in-button,
+#facebook-sign-in-button {
     margin-top: 10px;
     font-size: 16px;
 }

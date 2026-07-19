@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
 import { getDatabase, ref, child, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, FacebookAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"
 
 const firebaseConfig = {
     apiKey: "AIzaSyDtO7WiaH5RHe5ixovVPx6U_JE1K6RmMw0",
@@ -16,6 +16,7 @@ const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const googleProvider = new GoogleAuthProvider()
 const githubProvider = new GithubAuthProvider()
+const facebookProvider = new FacebookAuthProvider()
 const database = getDatabase(app)
 
 let shoppingListInDB = null
@@ -30,6 +31,7 @@ const createAccountButtonEl = document.getElementById("create-account-button")
 const signInButtonEl = document.getElementById("sign-in-button")
 const googleSignInButtonEl = document.getElementById("google-sign-in-button")
 const githubSignInButtonEl = document.getElementById("github-sign-in-button")
+const facebookSignInButtonEl = document.getElementById("facebook-sign-in-button")
 const signOutButtonEl = document.getElementById("sign-out-button")
 const shoppingListInterfaceEl = document.getElementById("shopping-list-interface")
 const inputFieldEl = document.getElementById("input-field")
@@ -63,6 +65,19 @@ githubSignInButtonEl.addEventListener("click", async function() {
 
     try {
         await signInWithPopup(auth, githubProvider)
+    } catch (error) {
+        showAuthError(error)
+    } finally {
+        setAuthControlsDisabled(false)
+    }
+})
+
+facebookSignInButtonEl.addEventListener("click", async function() {
+    clearAuthError()
+    setAuthControlsDisabled(true)
+
+    try {
+        await signInWithPopup(auth, facebookProvider)
     } catch (error) {
         showAuthError(error)
     } finally {
@@ -205,6 +220,7 @@ function setAuthControlsDisabled(disabled) {
     signInButtonEl.disabled = disabled
     googleSignInButtonEl.disabled = disabled
     githubSignInButtonEl.disabled = disabled
+    facebookSignInButtonEl.disabled = disabled
 }
 
 function clearAuthError() {
@@ -216,10 +232,11 @@ function showAuthError(error) {
         "auth/email-already-in-use": "An account already exists for this email address.",
         "auth/account-exists-with-different-credential": "An account already exists for this email using another sign-in method. Sign in with the original method.",
         "auth/cancelled-popup-request": "Another sign-in request is already in progress.",
-        "auth/credential-already-in-use": "This GitHub account is already associated with another user.",
+        "auth/credential-already-in-use": "This sign-in credential is already associated with another user.",
         "auth/invalid-email": "Enter a valid email address.",
         "auth/invalid-login-credentials": "The email address or password is incorrect.",
         "auth/invalid-credential": "The email address or password is incorrect.",
+        "auth/internal-error": "Sign-in could not be completed. Please try again.",
         "auth/missing-password": "Enter a password.",
         "auth/network-request-failed": "Unable to connect. Check your internet connection and try again.",
         "auth/operation-not-allowed": "This sign-in method is not enabled for this application.",
