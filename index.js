@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+import { getDatabase, ref, child, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"
 
 const firebaseConfig = {
@@ -15,7 +15,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const database = getDatabase(app)
-const shoppingListInDB = ref(database, "shoppingList")
+
+let shoppingListInDB = null
+let unsubscribeShoppingList = null
 
 const authControlsEl = document.getElementById("auth-controls")
 const authStatusEl = document.getElementById("auth-status")
@@ -52,9 +54,30 @@ signOutButtonEl.addEventListener("click", async function() {
 })
 
 onAuthStateChanged(auth, function(user) {
+    stopShoppingListListener()
     clearAuthError()
 
     if (user) {
+        const userShoppingListInDB = ref(database, `users/${user.uid}/shoppingList`)
+
+        shoppingListInDB = userShoppingListInDB
+        unsubscribeShoppingList = onValue(userShoppingListInDB, function(snapshot) {
+            if (shoppingListInDB !== userShoppingListInDB) {
+                return
+            }
+
+            renderShoppingList(snapshot)
+        }, function() {
+            if (shoppingListInDB !== userShoppingListInDB) {
+                return
+            }
+
+            clearShoppingListEl()
+            shoppingListInDB = null
+            unsubscribeShoppingList = null
+            authErrorEl.textContent = "Unable to access your shopping list."
+        })
+
         authStatusEl.textContent = `Signed in as ${user.email}`
         authControlsEl.hidden = true
         signOutButtonEl.hidden = false
@@ -72,6 +95,11 @@ onAuthStateChanged(auth, function(user) {
 })
 
 addButtonEl.addEventListener("click", function() {
+    if (!shoppingListInDB) {
+        authErrorEl.textContent = "Sign in to access your shopping list."
+        return
+    }
+
     let inputValue = inputFieldEl.value
     
     push(shoppingListInDB, inputValue)
@@ -79,7 +107,7 @@ addButtonEl.addEventListener("click", function() {
     clearInputFieldEl()
 })
 
-onValue(shoppingListInDB, function(snapshot) {
+function renderShoppingList(snapshot) {
     if (snapshot.exists()) {
         let itemsArray = Object.entries(snapshot.val())
     
@@ -95,7 +123,17 @@ onValue(shoppingListInDB, function(snapshot) {
     } else {
         shoppingListEl.innerHTML = "No items here... yet"
     }
-})
+}
+
+function stopShoppingListListener() {
+    if (unsubscribeShoppingList) {
+        unsubscribeShoppingList()
+        unsubscribeShoppingList = null
+    }
+
+    shoppingListInDB = null
+    clearShoppingListEl()
+}
 
 function clearShoppingListEl() {
     shoppingListEl.innerHTML = ""
@@ -159,13 +197,18 @@ function showAuthError(error) {
 function appendItemToShoppingListEl(item) {
     let itemID = item[0]
     let itemValue = item[1]
+    const itemListInDB = shoppingListInDB
     
     let newEl = document.createElement("li")
     
     newEl.textContent = itemValue
     
     newEl.addEventListener("dblclick", function() {
-        let exactLocationOfItemInDB = ref(database, `shoppingList/${itemID}`)
+        if (!itemListInDB || shoppingListInDB !== itemListInDB) {
+            return
+        }
+
+        let exactLocationOfItemInDB = child(itemListInDB, itemID)
         
         remove(exactLocationOfItemInDB)
     })
