@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
 import { getDatabase, ref, child, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js"
 
 const firebaseConfig = {
     apiKey: "AIzaSyDtO7WiaH5RHe5ixovVPx6U_JE1K6RmMw0",
@@ -14,6 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
+const googleProvider = new GoogleAuthProvider()
 const database = getDatabase(app)
 
 let shoppingListInDB = null
@@ -26,6 +27,7 @@ const emailInputEl = document.getElementById("email-input")
 const passwordInputEl = document.getElementById("password-input")
 const createAccountButtonEl = document.getElementById("create-account-button")
 const signInButtonEl = document.getElementById("sign-in-button")
+const googleSignInButtonEl = document.getElementById("google-sign-in-button")
 const signOutButtonEl = document.getElementById("sign-out-button")
 const shoppingListInterfaceEl = document.getElementById("shopping-list-interface")
 const inputFieldEl = document.getElementById("input-field")
@@ -38,6 +40,19 @@ createAccountButtonEl.addEventListener("click", async function() {
 
 signInButtonEl.addEventListener("click", async function() {
     await runAuthentication(signInWithEmailAndPassword)
+})
+
+googleSignInButtonEl.addEventListener("click", async function() {
+    clearAuthError()
+    setAuthControlsDisabled(true)
+
+    try {
+        await signInWithPopup(auth, googleProvider)
+    } catch (error) {
+        showAuthError(error)
+    } finally {
+        setAuthControlsDisabled(false)
+    }
 })
 
 signOutButtonEl.addEventListener("click", async function() {
@@ -171,6 +186,7 @@ function setAuthControlsDisabled(disabled) {
     passwordInputEl.disabled = disabled
     createAccountButtonEl.disabled = disabled
     signInButtonEl.disabled = disabled
+    googleSignInButtonEl.disabled = disabled
 }
 
 function clearAuthError() {
@@ -180,12 +196,18 @@ function clearAuthError() {
 function showAuthError(error) {
     const errorMessages = {
         "auth/email-already-in-use": "An account already exists for this email address.",
+        "auth/account-exists-with-different-credential": "An account already exists for this email using another sign-in method. Sign in with the original method.",
+        "auth/cancelled-popup-request": "Another sign-in request is already in progress.",
         "auth/invalid-email": "Enter a valid email address.",
         "auth/invalid-login-credentials": "The email address or password is incorrect.",
         "auth/invalid-credential": "The email address or password is incorrect.",
         "auth/missing-password": "Enter a password.",
         "auth/network-request-failed": "Unable to connect. Check your internet connection and try again.",
+        "auth/operation-not-allowed": "Google sign-in is not enabled for this application.",
+        "auth/popup-blocked": "The sign-in popup was blocked. Allow popups and try again.",
+        "auth/popup-closed-by-user": "Google sign-in was cancelled before it was completed.",
         "auth/too-many-requests": "Too many attempts. Wait a moment and try again.",
+        "auth/unauthorized-domain": "Google sign-in is not available from this domain.",
         "auth/user-not-found": "The email address or password is incorrect.",
         "auth/weak-password": "Use a password with at least six characters.",
         "auth/wrong-password": "The email address or password is incorrect."

@@ -55,6 +55,11 @@ html, body {
     font-size: 16px;
 }
 
+#google-sign-in-button {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
 #sign-out-button {
     width: 100%;
     font-size: 16px;
