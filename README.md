@@ -1,32 +1,36 @@
 # Shopping List
 
-Shopping List is a small web application for keeping track of items to buy. Its objective is to provide a quick, focused way to add items to a shared list and remove them when they are no longer needed.
-
-The current application displays a shopping-themed interface, accepts an item through a text field, and adds submitted items to the list. Existing list items can be removed by double-clicking them.
+Shopping List is a small web application for keeping track of items to buy. Users can add shopping items, see them appear in the shared list, and remove them by double-clicking them. List data is stored in Firebase Realtime Database.
 
 ## Prerequisites
 
 - Node.js
 - npm
 
-## Getting started
+## Local development
 
-Install the project dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Start the Vite development server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-## Production build
+## Build and preview
 
-Create a production build in `dist/`:
+Create a production build:
 
 ```bash
 npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
 ```
