@@ -7,11 +7,67 @@ html, body {
     user-select: none;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 .container {
     display: flex;
     flex-direction: column;
     max-width: 320px;
     margin: 30px auto;
+}
+
+#shopping-list-interface {
+    display: flex;
+    flex-direction: column;
+}
+
+#shopping-list-interface[hidden] {
+    display: none;
+}
+
+.auth-panel {
+    margin-bottom: 20px;
+}
+
+.auth-panel h1,
+.auth-panel p {
+    text-align: center;
+}
+
+.auth-panel h1 {
+    margin: 0 0 10px;
+}
+
+#auth-controls {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.auth-actions button {
+    flex: 1;
+    font-size: 16px;
+}
+
+#sign-out-button {
+    width: 100%;
+    font-size: 16px;
+}
+
+#auth-error {
+    min-height: 1.2em;
+    color: #9C1C31;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
 }
 
 img {
